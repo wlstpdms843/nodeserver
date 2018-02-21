@@ -45,7 +45,7 @@ function joinRoom(socket, roomList) {
 			roomList[room_test] = new Array(); // 이 코드는 현재 테스트 용으로 실제 createRoom이 동작시 필요 없어짐.
 
 		var userCnt = roomList[room_test].length;
-		console.log('joinRoom : userCnt = ' + userCnt);
+		// console.log('joinRoom : userCnt = ' + userCnt);
 		
 		// 입장한 유저의 번호를 할당, 및 유저 정보 삽입
 		roomList[room_test][userCnt] = new Array();
@@ -64,7 +64,7 @@ function joinRoom(socket, roomList) {
 
 		socket.emit('roomUser', roomUserList);
 
-		console.log('user is join the ' + room_test + ' userId = ' + userId);
+		// console.log('user is join the ' + room_test + ' userId = ' + userId);
 	});
 }
 
@@ -93,7 +93,9 @@ function exitRoom(socket, roomList) {
 
 				socket.emit('exitRoom');
 				
-				socket.leave(room_test);
+				//18.02.20 게임방 퇴장 소켓 삭제 부분 제거
+				// socket.leave(room_test);
+				
 				break;
 			}	
 		}
@@ -113,22 +115,22 @@ function userReadyChk(socket, roomList) {
 				if(jsonObj.ready == 'True') {
 					// 해당 유저의 상태를 ready로 변환
 					roomList[room_test][i][1] = 'ready';
-					console.log('user is ready  userId = ' + jsonObj.nick);
+					// console.log('user is ready  userId = ' + jsonObj.nick);
 					// 방 내에 존재하는 사람들에게 레디 했다는 것을 전송
 					socket.broadcast.to(room_test).emit('ready', jsonObj.nick);
 
-					console.log('allReadyChk 전의 상황');
+					// console.log('allReadyChk 전의 상황');
 					// 방 안에 존재하는 모든 사람들이 레디를 했는지 체크
 					if( allReady(roomList) ) {
-						console.log('allReadyChk 완료 : emit 신호가 날아가야함');
+						// console.log('allReadyChk 완료 : emit 신호가 날아가야함');
 						// 모두 레디 했다는 것을 나를 포함한 방안에 있는 모든 유저들에게
-						socket.broadcast.to(room_test).emit('allReady');
-						socket.emit('allReady');
+						socket.broadcast.to(room_test).emit('allReady','broadcastAllReady');
+						socket.emit('allReady','emitAllReady');
 					}
 				} else { // 아닐 경우
 					// 해당 유저의 상태를 notReady로 변환
 					roomList[room_test][i][1] = 'notReady';
-					console.log('user cancel ready  userId = ' + jsonObj.nick);
+					// console.log('user cancel ready  userId = ' + jsonObj.nick);
 					// 방 내에 존재하는 사람들에게 레디를 풀었다는 것을 전송
 					socket.broadcast.to(room_test).emit('notReady', jsonObj.nick);
 				}
@@ -144,7 +146,7 @@ function allReady(roomList) {
 
 	const userNum = roomList[room_test].length;
 
-	console.log('allReady : userNum = ' + userNum);
+	// console.log('allReady : userNum = ' + userNum);
 
 	for(var i=0; i<userNum; i++) {
 		if(roomList[room_test][i][1] == 'ready') {
@@ -154,10 +156,10 @@ function allReady(roomList) {
 
 	// 두명 이상일 경우
 	if(cnt == userNum && cnt >= 2) {
-		console.log('allReady : return = true의 상황  cnt = ' + cnt);
+		// console.log('allReady : return = true의 상황  cnt = ' + cnt);
 		return true;
 	} else {
-		console.log('allReady : return = false의 상황  cnt = ' + cnt);
+		// console.log('allReady : return = false의 상황  cnt = ' + cnt);
 		return false;
 	}
 }
@@ -170,7 +172,7 @@ function userExit(socket, roomList){
 		var userCnt = roomList[room_test].length;
 		var userId  = nick;
 
-		console.log('exit userId = ' + userId);
+		// console.log('exit userId = ' + userId);
 
 
 		for(var i=0 ; i < userCnt ; i++){
@@ -187,9 +189,19 @@ function userExit(socket, roomList){
 	});
 }
 
+//방 입장 또는 유저 입장 시 씬 연결을 위해 유저이름과 레디상태를 만들어줌
+function setIndex(socket, roomList){
+	
+	socket.on('index', function(index){
+
+		socket.emit('resIndex', 'sendIndex');
+	});
+}
+
 exports.createRoom = createRoom;
 exports.joinRoom = joinRoom;
 exports.exitRoom = exitRoom;
 exports.userReadyChk = userReadyChk;
 exports.userExit = userExit;
+exports.setIndex = setIndex;
 

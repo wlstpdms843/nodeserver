@@ -32,6 +32,13 @@ var userList = [];
 */
 var roomList = [];
 
+/*
+	roomSetting['방이름']['설정명']['설정정보']
+	방의 설정 정보 및 오브젝트 상태들을 저장 해놓는 공간
+*/
+var roomStatus = [];
+roomStatus[room_test] = new Array(); // 이 코드는 현재 테스트 용으로 실제 createRoom이 동작시 필요 없어짐.
+
 // 각 방에 유저 및 NPC 위치 정보(의자 번호)
 var roomPosition = [];
 
@@ -61,12 +68,23 @@ io.sockets.on('connection', function (socket) {
 
 	roomController.userExit(socket, roomList);
 
+	roomController.setIndex(socket, roomList);
+
+	//serverController
+	serverController.joinServer(socket, userList);
+
+	serverController.exitServer(socket, userList);
+	
+	serverController.disconnected(socket, userList, roomList);
+
+	serverController.errtest();
+
 	// 위치정보 수신 시 처리 이벤트
 	getLocation(socket);
 
 	// 2018_02_08
 	// 맵에서의 각 플레이어들의 위치를 랜덤으로 생성하여 뿌려주는 역할
-	initGameStart.sendInit(socket, roomList, roomPosition, chair);
+	initGameStart.sendInit(socket, roomList, roomStatus, chair);
 
 	// 2018_02_08 
 	// 한번에 모아서 보내줄 경우
@@ -87,7 +105,6 @@ io.sockets.on('connection', function (socket) {
 		console.log('disconn : ' + socket.id);
 
 		socket.broadcast.emit('disconn', data);
-
 
 	});
 });
