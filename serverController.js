@@ -8,12 +8,14 @@ function joinServer(socket, userList) {
 	});
 }
 
+// 유저의 정상적인 서버 종료 시 ? // 아직 구현 미완료
 function exitServer(socket, userList) {
 	socket.on("exitServer",function(userId) {
 		delete userList[userId];
 	});
 }
 
+// 유저의 정상적인 종료 및, 예기치 못한 종료 시 처리
 function disconnected(socket, userList, roomList) {
 	socket.on('disconnect', function() {
 		for(var key in userList){
@@ -43,40 +45,7 @@ function disconnected(socket, userList, roomList) {
     });
 }
 
-function errtest() {
-    var arrayTest = [];
-    arrayTest['test'] = new Array();
-
-    //Array.prototype.push.apply(arrayTest['test']);
-
-    // console.log('arrayTestFirst = ' + arrayTest['test'].push(0));
-    // console.log('arrayTest = ' + arrayTest['test'].length);
-    // console.log(arrayTest['test'][]);
-    
-    arrayTest['test'][0] = new Array();
-    arrayTest['test'][1] = new Array();
-    arrayTest['test'][2] = new Array();
-
-    arrayTest['test'][0][0] = 1;
-    arrayTest['test'][0][1] = 'aaaaa';
-    arrayTest['test'][0][2] = 1;
-    arrayTest['test'][0][3] = 1;
-    arrayTest['test'][2][0] = 1;
-    arrayTest['test'][2][1] = 1;
-
-    console.log('arrayTest = ' + arrayTest['test'].length);
-
-/*
-    arrayTest['test'][0] = 1;
-    console.log('arrayTest = ' + arrayTest['test'].length());
-    arrayTest['test'][1] = 1;
-    console.log('arrayTest = ' + arrayTest['test'].length());
-    arrayTest['test'][2] = 1;
-    console.log('arrayTest = ' + arrayTest['test'].length());
-*/
-}
 
 exports.joinServer = joinServer;
 exports.exitServer = exitServer;
 exports.disconnected = disconnected;
-exports.errtest = errtest;

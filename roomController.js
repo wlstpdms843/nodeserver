@@ -103,6 +103,8 @@ function exitRoom(socket, roomList) {
 	});
 }
 
+// 2018_02_19
+// 방 입장 후 로비에서의 유저가 레디 하는 것을 수신 및, 전체 유저의 레디 상황 체크
 function userReadyChk(socket, roomList) {
 
 	socket.on('checkReady', function(jsonObj) {
@@ -140,6 +142,7 @@ function userReadyChk(socket, roomList) {
 	});
 }
 
+// 2018_02_19
 // userReadyChk 안에서 실행 되는 함수 ( 모든 유저들의 레디를 검사해서 start 신호를 던져줌)
 function allReady(roomList) {
 	var cnt = 0;
@@ -164,8 +167,9 @@ function allReady(roomList) {
 	}
 }
 
+// 2018_02_20
 //유저가 방 나가기를 눌렀을때 방퇴장 처리
-function userExit(socket, roomList){
+function exitRoom(socket, roomList){
 	//유저id받아옴
 	socket.on('exit', function(nick) {
 
@@ -173,7 +177,6 @@ function userExit(socket, roomList){
 		var userId  = nick;
 
 		// console.log('exit userId = ' + userId);
-
 
 		for(var i=0 ; i < userCnt ; i++){
 			
@@ -202,6 +205,6 @@ exports.createRoom = createRoom;
 exports.joinRoom = joinRoom;
 exports.exitRoom = exitRoom;
 exports.userReadyChk = userReadyChk;
-exports.userExit = userExit;
+exports.exitRoom = exitRoom;
 exports.setIndex = setIndex;
 

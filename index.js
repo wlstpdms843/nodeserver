@@ -1,11 +1,16 @@
 // socket.io 서버 생성
 const io = require('socket.io').listen(5000);
+
 // 방 관리의 주요 기능들을 모아놓은 것
 const roomController = require('./roomController');
 // 게임 시작 시 초기 셋팅
 const initGameStart = require('./initGameStart');
-// 게임 시작 시 초기 셋팅
+// 유저가 서버에 접속 및 해제했을 때의 처리
 const serverController = require('./serverController');
+// 게임 내부에서 동작하는 이벤트들을 처리
+const playGame = require('./playGame');
+// 음성 대화 지원
+const voiceTalk = require('./voiceTalk');
 
 
 
@@ -37,10 +42,8 @@ var roomList = [];
 	방의 설정 정보 및 오브젝트 상태들을 저장 해놓는 공간
 */
 var roomStatus = [];
-roomStatus[room_test] = new Array(); // 이 코드는 현재 테스트 용으로 실제 createRoom이 동작시 필요 없어짐.
 
-// 각 방에 유저 및 NPC 위치 정보(의자 번호)
-var roomPosition = [];
+roomStatus[room_test] = new Array(); // 이 코드는 현재 테스트 용으로 실제 createRoom이 동작시 필요 없어짐.
 
 
 // 2018_01_28 
@@ -57,66 +60,45 @@ io.sockets.on('connection', function (socket) {
 
 	socket.join(room_test); // 정훈 테스트 용
 
-	// 2012_02_08
-	// 방 접속
-	// roomController.joinRoom(socket);
+
+	// roomController
+	// 방 생성
 	roomController.createRoom(socket, roomList);
-
+	// 방 입장
 	roomController.joinRoom(socket, roomList);
-
+	// 방 퇴장
+	roomController.exitRoom(socket, roomList);
+	// 유저 레디 시 ( 레디 체크 )
 	roomController.userReadyChk(socket, roomList);
-
-	roomController.userExit(socket, roomList);
-
+	// ?????? 뭔지 모름
 	roomController.setIndex(socket, roomList);
 
-	//serverController
+	// serverController
+	// 유저의 서버 접속
 	serverController.joinServer(socket, userList);
-
+	// 유저가 서버에서 나갔을 때 ( 정상적인 게임 종료 )
 	serverController.exitServer(socket, userList);
-	
+	// 강제 종료 및, 예외적인 서버와의 연결 끊김 처리
 	serverController.disconnected(socket, userList, roomList);
 
-	serverController.errtest();
+	// playGame
+	// 유저 움직임 수신
+	playGame.getMovement(socket);
+	// 유저가 총 집었을 때
+	playGame.getPickUpGun(socket);
+	// 유저가 총 버렸을 때
+	playGame.getDropGun(socket);
+	// 유저가 죽었을 때
+	playGame.getPlayerDie(socket);
+	// 유저가 총을 쐈을 때
+	playGame.getShootGun(socket);
 
-	// 위치정보 수신 시 처리 이벤트
-	getLocation(socket);
-
-	// 2018_02_08
+	// initGameStart
 	// 맵에서의 각 플레이어들의 위치를 랜덤으로 생성하여 뿌려주는 역할
 	initGameStart.sendInit(socket, roomList, roomStatus, chair);
 
-	// 2018_02_08 
-	// 한번에 모아서 보내줄 경우
-	// 1. 모으는 이벤트
-	socket.on('now2', function (jsonStr) {
-		// ? += jsonStr;
-	});
 
-	/*
-	// 모은 것들 보내는 이벤트
-	socket.broadcast.to(room_test).emit('result', jsonStr);
-	socket.setInterval(1000/30);
-	*/
+	// voiceTalk
 
-	// 2018_01_28 
-	// 연결 끊어졌을때
-	socket.on('disconnect', function (data) {
-		console.log('disconn : ' + socket.id);
-
-		socket.broadcast.emit('disconn', data);
-
-	});
 });
 
-
-// 2018_02_05 
-// unity 클라이언트로부터 해당하는 모션 정보를 받았을 경우
-function getLocation(socket) {
-	socket.on('now', function(jsonStr) {
-
-		// 2018_02_05 
-		// 같은 방에 존재하는 유저들에게 본인의 위치 정보를 전송함
-		socket.broadcast.to(room_test).emit('result', jsonStr);
-	});
-};
