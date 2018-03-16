@@ -22,7 +22,7 @@ const chair = 8;
 // 접속해 있는 유저들 정보
 // 키 값으로 유저 아이디가 들어가며, 밸류값으로 소켓 아이디 저장
 // userList['유저ID'] = socket.id;
-var userList = [];
+var userList = new Array();
 
 // 방들 정보 저장
 /*
@@ -35,13 +35,13 @@ var userList = [];
 	
 	유저 번호는 방에 접속한 순서대로 번호를 부여받으며 방에서 나갈 시 해당 방에서 유저의 정보는 사라진다.
 */
-var roomList = [];
+var roomList = new Array();
 
 /*
 	roomSetting['방이름']['설정명']['설정정보']
 	방의 설정 정보 및 오브젝트 상태들을 저장 해놓는 공간
 */
-var roomStatus = [];
+var roomStatus = new Array();
 
 roomStatus[room_test] = new Array(); // 이 코드는 현재 테스트 용으로 실제 createRoom이 동작시 필요 없어짐.
 
@@ -58,9 +58,6 @@ io.sockets.on('connection', function (socket) {
 
 	console.log('connected : ' + socket.id);
 
-	socket.join(room_test); // 정훈 테스트 용
-
-
 	// roomController
 	// 방 생성
 	roomController.createRoom(socket, roomList);
@@ -70,8 +67,8 @@ io.sockets.on('connection', function (socket) {
 	roomController.exitRoom(socket, roomList);
 	// 유저 레디 시 ( 레디 체크 )
 	roomController.userReadyChk(socket, roomList);
-	// ?????? 뭔지 모름
-	roomController.setIndex(socket, roomList);
+	// 씬 전환 정보 전송
+	roomController.setIndex(socket, roomList, io);
 
 	// serverController
 	// 유저의 서버 접속
@@ -85,19 +82,21 @@ io.sockets.on('connection', function (socket) {
 	// 유저 움직임 수신
 	playGame.getMovement(socket);
 	// 유저가 총 집었을 때
-	playGame.getPickUpGun(socket);
+	playGame.getGun(socket);
+	// 유저가 총을 숨겼을 때
+	playGame.hidingGun(socket);
 	// 유저가 총 버렸을 때
 	playGame.getDropGun(socket);
-	// 유저가 죽었을 때
-	playGame.getPlayerDie(socket);
 	// 유저가 총을 쐈을 때
-	playGame.getShootGun(socket);
+	playGame.getShootGun(socket,io,roomStatus,roomList);
 
 	// initGameStart
 	// 맵에서의 각 플레이어들의 위치를 랜덤으로 생성하여 뿌려주는 역할
-	initGameStart.sendInit(socket, roomList, roomStatus, chair);
-
-
+	initGameStart.sendInit(socket, roomList, roomStatus, chair, io);
+	// 인게임에서 유저가 준비동작을 갖추었을 때
+	initGameStart.handReady(socket, roomList, roomStatus, io);
+	// 인게임에서 유저가 준비동작을 갖추다가 다른 동작을 취했을 때
+	initGameStart.handNotReady(socket, roomList, roomStatus, io);
 	// voiceTalk
 
 });

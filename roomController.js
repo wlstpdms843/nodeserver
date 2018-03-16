@@ -26,6 +26,7 @@ function createRoom(socket, roomList) {
 function joinRoom(socket, roomList) {
 //	socket.on('joinRoom', function(roomName, userId) {
 	socket.on('joinRoom', function(userId) {
+		
 		socket.join(room_test);
 		
 		// 2018_02_12
@@ -104,8 +105,8 @@ function exitRoom(socket, roomList) {
 }
 
 // 2018_02_19
-// 방 입장 후 로비에서의 유저가 레디 하는 것을 수신 및, 전체 유저의 레디 상황 체크
-function userReadyChk(socket, roomList) {
+// 방 입장 후 로비에서의 유저가 레디 하는 것을 수신 및, 전체 유저의 레디 상황 체크, 게임 타이머
+function userReadyChk(socket, roomList, io) {
 
 	socket.on('checkReady', function(jsonObj) {
 		
@@ -126,6 +127,7 @@ function userReadyChk(socket, roomList) {
 					if( allReady(roomList) ) {
 						// console.log('allReadyChk 완료 : emit 신호가 날아가야함');
 						// 모두 레디 했다는 것을 나를 포함한 방안에 있는 모든 유저들에게
+					
 						socket.broadcast.to(room_test).emit('allReady','broadcastAllReady');
 						socket.emit('allReady','emitAllReady');
 					}

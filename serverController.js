@@ -22,7 +22,7 @@ function disconnected(socket, userList, roomList) {
 			if(userList[key] == socket.id){
                 
                 //유저 닉네임
-                var nick = key
+                var nick = key;
 
                 var userCnt = roomList[room_test].length;
 
